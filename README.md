@@ -22,5 +22,5 @@ For nova-api:
 For nova-scheduler:
 
     primitive p_scheduler ocf:openstack:nova-scheduler \
-    	params config="/etc/nova/nova.conf" queue_port="5777" \
+    	params config="/etc/nova/nova.conf" \
     	op monitor interval="30s" timeout="30s" \ 
