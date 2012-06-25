@@ -102,14 +102,6 @@ User running OpenStack SchedulerService (nova-scheduler)
 <content type="string" default="${OCF_RESKEY_user_default}" />
 </parameter>
 
-<parameter name="queue_port" unique="0" required="0">
-<longdesc lang="en">
-The listening port number of the AMQP server. Mandatory to perform a monitor check
-</longdesc>
-<shortdesc lang="en">AMQP listening port</shortdesc>
-<content type="string" default="${OCF_RESKEY_server_queue_port_default}" />
-</parameter>
-
 <parameter name="pid" unique="0" required="0">
 <longdesc lang="en">
 The pid file to use for this OpenStack SchedulerService (nova-scheduler) instance
