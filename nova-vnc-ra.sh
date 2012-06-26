@@ -1,9 +1,9 @@
 #!/bin/sh
 #
 #
-# OpenStack NovaAPI (nova-api)
+# OpenStack Nova VNC Console (nova-novncproxy)
 #
-# Description:  Manages an OpenStack NovaAPI (nova-api) process as an HA resource
+# Description:  Manages an OpenStack Nova VNC Console (nova-novncproxy) process as an HA resource
 #
 # Authors:      Sébastien Han
 # Mainly inspired by the Glance API resource agent written by Martin Gerhard Loschwitz from Hastexo: http://goo.gl/whLpr
@@ -20,8 +20,8 @@
 #   OCF_RESKEY_user
 #   OCF_RESKEY_pid
 #   OCF_RESKEY_monitor_binary
-#   OCF_RESKEY_additional_parameters
-#   OCF_RESKEY_api_listened_port
+#   OCF_RESKEY_console_port
+#   OCF_RESKEY_web
 #   OCF_RESKEY_additional_parameters
 #######################################################################
 # Initialization:
@@ -33,19 +33,21 @@
 
 # Fill in some defaults if no values are specified
 
-OCF_RESKEY_binary_default="nova-api"
+OCF_RESKEY_binary_default="nova-novncproxy"
 OCF_RESKEY_config_default="/etc/nova/nova.conf"
 OCF_RESKEY_user_default="nova"
 OCF_RESKEY_pid_default="$HA_RSCTMP/$OCF_RESOURCE_INSTANCE.pid"
 OCF_RESKEY_monitor_binary_default="netstat"
-OCF_RESKEY_api_listened_port_default="8773|8774|8776"
+OCF_RESKEY_console_port_default="6080"
+OCF_RESKEY_web_default="/usr/share/novnc/"
 
 : ${OCF_RESKEY_binary=${OCF_RESKEY_binary_default}}
 : ${OCF_RESKEY_config=${OCF_RESKEY_config_default}}
 : ${OCF_RESKEY_user=${OCF_RESKEY_user_default}}
 : ${OCF_RESKEY_pid=${OCF_RESKEY_pid_default}}
 : ${OCF_RESKEY_monitor_binary=${OCF_RESKEY_monitor_binary_default}}
-: ${OCF_RESKEY_api_listened_port=${OCF_RESKEY_api_listened_port_default}}
+: ${OCF_RESKEY_console_port=${OCF_RESKEY_console_port_default}}
+: ${OCF_RESKEY_web=${OCF_RESKEY_web_default}}
 
 #######################################################################
 
@@ -53,7 +55,7 @@ usage() {
     cat <<UEND
         usage: $0 (start|stop|validate-all|meta-data|status|monitor)
 
-        $0 manages an OpenStack NovaAPI (nova-api) process as an HA resource 
+        $0 manages an OpenStack Nova VNC Console (nova-novncproxy) process as an HA resource 
 
         The 'start' operation starts the identity service.
         The 'stop' operation stops the identity service.
@@ -69,54 +71,70 @@ meta_data() {
     cat <<END
 <?xml version="1.0"?>
 <!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
-<resource-agent name="nova-api">
+<resource-agent name="nova-novncproxy">
 <version>1.0</version>
 
 <longdesc lang="en">
-Resource agent for the OpenStack NovaAPI Service (nova-api)
-May manage a nova-api instance or a clone set that 
-creates a distributed nova-api cluster.
+Resource agent for the OpenStack Nova VNC Console Service (nova-novncproxy)
+May manage a nova-novncproxy instance or a clone set that 
+creates a distributed nova-novncproxy cluster.
 </longdesc>
-<shortdesc lang="en">Manages the OpenStack NovaAPI (nova-api)</shortdesc>
+<shortdesc lang="en">Manages the OpenStack Nova VNC Console (nova-novncproxy)</shortdesc>
 <parameters>
 
 <parameter name="binary" unique="0" required="0">
 <longdesc lang="en">
-Location of the OpenStack NovaAPI server binary (nova-api)
+Location of the OpenStack Nova VNC Console server binary (nova-novncproxy)
 </longdesc>
-<shortdesc lang="en">OpenStack NovaAPI server binary (nova-api)</shortdesc>
+<shortdesc lang="en">OpenStack Nova VNC Console server binary (nova-novncproxy)</shortdesc>
 <content type="string" default="${OCF_RESKEY_binary_default}" />
 </parameter>
 
 <parameter name="config" unique="0" required="0">
 <longdesc lang="en">
-Location of the OpenStack NovaAPI (nova-api) configuration file
+Location of the OpenStack Nova VNC Console (nova-novncproxy) configuration file
 </longdesc>
-<shortdesc lang="en">OpenStack NovaAPI (nova-api registry) config file</shortdesc>
+<shortdesc lang="en">OpenStack Nova VNC Console (nova-novncproxy registry) config file</shortdesc>
 <content type="string" default="${OCF_RESKEY_config_default}" />
 </parameter>
 
 <parameter name="user" unique="0" required="0">
 <longdesc lang="en">
-User running OpenStack NovaAPI (nova-api)
+User running OpenStack Nova VNC Console (nova-novncproxy)
 </longdesc>
-<shortdesc lang="en">OpenStack NovaAPI (nova-api) user</shortdesc>
+<shortdesc lang="en">OpenStack Nova VNC Console (nova-novncproxy) user</shortdesc>
 <content type="string" default="${OCF_RESKEY_user_default}" />
+</parameter>
+
+<parameter name="console_port" unique="0" required="0">
+<longdesc lang="en">
+VNC console type running: nova-novnc or nova-xvpvncproxy
+</longdesc>
+<shortdesc lang="en">OpenStack Nova VNC Console (nova-novncproxy) console type</shortdesc>
+<content type="integer" default="${OCF_RESKEY_console_port_default}" />
+</parameter>
+
+<parameter name="web" unique="0" required="0">
+<longdesc lang="en">
+VNC console web URL
+</longdesc>
+<shortdesc lang="en">OpenStack Nova VNC Console (nova-novncproxy) web URL</shortdesc>
+<content type="string" default="${OCF_RESKEY_web_default}" />
 </parameter>
 
 <parameter name="pid" unique="0" required="0">
 <longdesc lang="en">
-The pid file to use for this OpenStack NovaAPI (nova-api) instance
+The pid file to use for this OpenStack Nova VNC Console (nova-novncproxy) instance
 </longdesc>
-<shortdesc lang="en">OpenStack NovaAPI (nova-api) pid file</shortdesc>
+<shortdesc lang="en">OpenStack Nova VNC Console (nova-novncproxy) pid file</shortdesc>
 <content type="string" default="${OCF_RESKEY_pid_default}" />
 </parameter>
 
 <parameter name="additional_parameters" unique="0" required="0">
 <longdesc lang="en">
-Additional parameters to pass on to the OpenStack NovaAPI (nova-api)
+Additional parameters to pass on to the OpenStack Nova VNC Console (nova-novncproxy)
 </longdesc>
-<shortdesc lang="en">Additional parameters for nova-api</shortdesc>
+<shortdesc lang="en">Additional parameters for nova-novncproxy</shortdesc>
 <content type="string" />
 </parameter>
 
@@ -137,7 +155,7 @@ END
 #######################################################################
 # Functions invoked by resource manager actions
 
-nova_api_validate() {
+nova_vnc_console_validate() {
     local rc
 
     check_binary $OCF_RESKEY_binary
@@ -162,12 +180,12 @@ nova_api_validate() {
     true
 }
 
-nova_api_status() {
+nova_vnc_console_status() {
     local pid
     local rc
 
     if [ ! -f $OCF_RESKEY_pid ]; then
-        ocf_log info "OpenStack NovaAPI (nova-api) is not running"
+        ocf_log info "OpenStack Nova VNC Console (nova-novncproxy) is not running"
         return $OCF_NOT_RUNNING
     else
         pid=`cat $OCF_RESKEY_pid`
@@ -178,16 +196,16 @@ nova_api_status() {
     if [ $rc -eq 0 ]; then
         return $OCF_SUCCESS
     else
-        ocf_log info "Old PID file found, but OpenStack NovaAPI (nova-api) is not running"
+        ocf_log info "Old PID file found, but OpenStack Nova VNC Console (nova-novncproxy) is not running"
         return $OCF_NOT_RUNNING
     fi
 }
 
-nova_api_monitor() {
+nova_vnc_console_monitor() {
     local rc
     local token
 
-    nova_api_status
+    nova_vnc_console_status
     rc=$?
 
     # If status returned anything but success, return that immediately
@@ -195,64 +213,63 @@ nova_api_monitor() {
         return $rc
     fi
 
-    # Check whether we are supposed to monitor by logging into nova-api
+    # Check whether we are supposed to monitor by logging into nova-novncproxy
     # and do it if that's the case.
     if ! check_binary $OCF_RESKEY_monitor_binary; then 
 		ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!" 
 	else
-		# Check osapi_compute and osapi_volume ports
-		API_LIST_CHECK=`$OCF_RESKEY_monitor_binary -a | egrep -E $OCF_RESKEY_api_listened_port | egrep -q "LISTEN"`
+		VNC_LIST_CHECK=`$OCF_RESKEY_monitor_binary -a | egrep "$OCF_RESKEY_console_port" | egrep -q "LISTEN"`
     fi
     rc=$?
     if [ $rc -ne 0 ]; then
-        ocf_log err "Nova API is not connected to the queue message service: $rc"
+        ocf_log err "Nova VNC Console doesn't seem to listen on his default port: $rc"
         return $OCF_NOT_RUNNING
     fi
 
-    ocf_log debug "OpenStack NovaAPI (nova-api) monitor succeeded"
+    ocf_log debug "OpenStack Nova VNC Console (nova-novncproxy) monitor succeeded"
     return $OCF_SUCCESS
 }
 
-nova_api_start() {
+nova_vnc_console_start() {
     local rc
 
-    nova_api_status
+    nova_vnc_console_status
     rc=$?
     if [ $rc -eq $OCF_SUCCESS ]; then
-        ocf_log info "OpenStack NovaAPI (nova-api) already running"
+        ocf_log info "OpenStack Nova VNC Console (nova-novncproxy) already running"
         return $OCF_SUCCESS
     fi
 
-    # run the actual nova-api daemon. Don't use ocf_run as we're sending the tool's output
+    # run the actual nova-novncproxy daemon. Don't use ocf_run as we're sending the tool's output
     # straight to /dev/null anyway and using ocf_run would break stdout-redirection here.
-    su ${OCF_RESKEY_user} -s /bin/sh -c "${OCF_RESKEY_binary} --flagfile=$OCF_RESKEY_config \
+    su ${OCF_RESKEY_user} -s /bin/sh -c "${OCF_RESKEY_binary} --flagfile=$OCF_RESKEY_config --web /usr/share/novnc/ \
        $OCF_RESKEY_additional_parameters"' >> /dev/null 2>&1 & echo $!' > $OCF_RESKEY_pid
 
     # Spin waiting for the server to come up.
     # Let the CRM/LRM time us out if required
     while true; do
-    nova_api_monitor
+    nova_vnc_console_monitor
     rc=$?
     [ $rc -eq $OCF_SUCCESS ] && break
     if [ $rc -ne $OCF_NOT_RUNNING ]; then
-        ocf_log err "OpenStack NovaAPI (nova-api) start failed"
+        ocf_log err "OpenStack Nova VNC Console (nova-novncproxy) start failed"
         exit $OCF_ERR_GENERIC
     fi
     sleep 1
     done
 
-    ocf_log info "OpenStack NovaAPI (nova-api) started"
+    ocf_log info "OpenStack Nova VNC Console (nova-novncproxy) started"
     return $OCF_SUCCESS
 }
 
-nova_api_stop() {
+nova_vnc_console_stop() {
     local rc
     local pid
 
-    nova_api_status
+    nova_vnc_console_status
     rc=$?
     if [ $rc -eq $OCF_NOT_RUNNING ]; then
-        ocf_log info "OpenStack NovaAPI (nova-api) already stopped"
+        ocf_log info "OpenStack Nova VNC Console (nova-novncproxy) already stopped"
         return $OCF_SUCCESS
     fi
 
@@ -261,7 +278,7 @@ nova_api_stop() {
     ocf_run kill -s TERM $pid
     rc=$?
     if [ $rc -ne 0 ]; then
-        ocf_log err "OpenStack NovaAPI (nova-api) couldn't be stopped"
+        ocf_log err "OpenStack Nova VNC Console (nova-novncproxy) couldn't be stopped"
         exit $OCF_ERR_GENERIC
     fi
 
@@ -272,26 +289,26 @@ nova_api_stop() {
     fi
     count=0
     while [ $count -lt $shutdown_timeout ]; do
-        nova_api_status
+        nova_vnc_console_status
         rc=$?
         if [ $rc -eq $OCF_NOT_RUNNING ]; then
             break
         fi
         count=`expr $count + 1`
         sleep 1
-        ocf_log debug "OpenStack NovaAPI (nova-api) still hasn't stopped yet. Waiting ..."
+        ocf_log debug "OpenStack Nova VNC Console (nova-novncproxy) still hasn't stopped yet. Waiting ..."
     done
 
-    nova_api_status
+    nova_vnc_console_status
     rc=$?
     if [ $rc -ne $OCF_NOT_RUNNING ]; then
         # SIGTERM didn't help either, try SIGKILL
-        ocf_log info "OpenStack NovaAPI (nova-api) failed to stop after ${shutdown_timeout}s \
+        ocf_log info "OpenStack Nova VNC Console (nova-novncproxy) failed to stop after ${shutdown_timeout}s \
           using SIGTERM. Trying SIGKILL ..."
         ocf_run kill -s KILL $pid
     fi
 
-    ocf_log info "OpenStack NovaAPI (nova-api) stopped"
+    ocf_log info "OpenStack Nova VNC Console (nova-novncproxy) stopped"
 
     rm -f $OCF_RESKEY_pid
 
@@ -308,14 +325,14 @@ case "$1" in
 esac
 
 # Anything except meta-data and help must pass validation
-nova_api_validate || exit $?
+nova_vnc_console_validate || exit $?
 
 # What kind of method was invoked?
 case "$1" in
-  start)        nova_api_start;;
-  stop)         nova_api_stop;;
-  status)       nova_api_status;;
-  monitor)      nova_api_monitor;;
+  start)        nova_vnc_console_start;;
+  stop)         nova_vnc_console_stop;;
+  status)       nova_vnc_console_status;;
+  monitor)      nova_vnc_console_monitor;;
   validate-all) ;;
   *)            usage
                 exit $OCF_ERR_UNIMPLEMENTED;;
