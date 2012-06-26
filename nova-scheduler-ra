@@ -110,6 +110,14 @@ The pid file to use for this OpenStack SchedulerService (nova-scheduler) instanc
 <content type="string" default="${OCF_RESKEY_pid_default}" />
 </parameter>
 
+<parameter name="server_queue_port" unique="0" required="0">                                                                                                                                                              
+<longdesc lang="en">                                                                                                                                                                                                      
+The listening port number of the AMQP server. Mandatory to perform a monitor check                                                                                                                                        
+</longdesc>                                                                                                                                                                                                               
+<shortdesc lang="en">AMQP listening port</shortdesc>                                                                                                                                                                      
+<content type="integer" default="${OCF_RESKEY_server_queue_port_default}" />                                                                                                                                              
+</parameter>      
+
 <parameter name="additional_parameters" unique="0" required="0">
 <longdesc lang="en">
 Additional parameters to pass on to the OpenStack SchedulerService (nova-scheduler)
