@@ -16,12 +16,13 @@
 #
 # OCF instance parameters:
 #   OCF_RESKEY_binary
-#   OCF_RESKEY_monitor_binary
 #   OCF_RESKEY_config
 #   OCF_RESKEY_user
 #   OCF_RESKEY_pid
-#   OCF_RESKEY_additional_parameters
+#   OCF_RESKEY_monitor_binary
 #   OCF_RESKEY_server_queue_port
+#   OCF_RESKEY_amqp_server_port
+#   OCF_RESKEY_additional_parameters
 #######################################################################
 # Initialization:
 
@@ -218,7 +219,7 @@ nova_scheduler_monitor() {
                 ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!"
         else
                 PID=`cat $OCF_RESKEY_pid`
-                # check the connection according to the PID
+                # check the connections according to the PID
                 SCHEDULER_AMQP_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_database_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
                 rc_amqp=$?
                 SCHEDULER_DATABASE_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_amqp_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
