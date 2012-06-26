@@ -207,7 +207,10 @@ nova_scheduler_monitor() {
     if ! check_binary $OCF_RESKEY_monitor_binary; then 
 		ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!" 
 	else
-		AMQP_CO_CHECK=`$OCF_RESKEY_monitor_binary -tun | egrep $OCF_RESKEY_server_queue_port | egrep -q "ESTABLISHED"`
+		PID=`cat $OCF_RESKEY_pid`
+		# check the connection according to the PID
+		AMQP_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_server_queue_port$PID" | egrep -q "ESTABLISHED"`
+
     fi
     rc=$?
     if [ $rc -ne 0 ]; then
