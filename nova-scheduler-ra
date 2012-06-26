@@ -21,6 +21,7 @@
 #   OCF_RESKEY_user
 #   OCF_RESKEY_pid
 #   OCF_RESKEY_additional_parameters
+#   OCF_RESKEY_server_queue_port
 #######################################################################
 # Initialization:
 
