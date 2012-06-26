@@ -210,7 +210,6 @@ nova_scheduler_monitor() {
 		PID=`cat $OCF_RESKEY_pid`
 		# check the connection according to the PID
 		AMQP_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_server_queue_port$PID" | egrep -q "ESTABLISHED"`
-
     fi
     rc=$?
     if [ $rc -ne 0 ]; then
