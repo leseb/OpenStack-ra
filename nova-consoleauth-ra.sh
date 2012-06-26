@@ -1,9 +1,9 @@
 #!/bin/sh
 #
 #
-# OpenStack Scheduler Service (nova-scheduler)
+# OpenStack Nova ConsoleAuth (nova-consoleauth)
 #
-# Description:  Manages an OpenStack Scheduler Service (nova-scheduler) process as an HA resource
+# Description:  Manages an OpenStack Nova ConsoleAuth (nova-consoleauth) process as an HA resource
 #
 # Authors:      Sébastien Han
 # Mainly inspired by the Glance API resource agent written by Martin Gerhard Loschwitz from Hastexo: http://goo.gl/whLpr
@@ -21,7 +21,6 @@
 #   OCF_RESKEY_user
 #   OCF_RESKEY_pid
 #   OCF_RESKEY_additional_parameters
-#   OCF_RESKEY_server_queue_port
 #######################################################################
 # Initialization:
 
@@ -32,19 +31,21 @@
 
 # Fill in some defaults if no values are specified
 
-OCF_RESKEY_binary_default="nova-scheduler"
+OCF_RESKEY_binary_default="nova-consoleauth"
 OCF_RESKEY_config_default="/etc/nova/nova.conf"
 OCF_RESKEY_user_default="nova"
 OCF_RESKEY_pid_default="$HA_RSCTMP/$OCF_RESOURCE_INSTANCE.pid"
 OCF_RESKEY_monitor_binary_default="netstat"
-OCF_RESKEY_server_queue_port_default="5672"
+OCF_RESKEY_service_connection_default="5672|3306"
 
 : ${OCF_RESKEY_binary=${OCF_RESKEY_binary_default}}
 : ${OCF_RESKEY_config=${OCF_RESKEY_config_default}}
 : ${OCF_RESKEY_user=${OCF_RESKEY_user_default}}
 : ${OCF_RESKEY_pid=${OCF_RESKEY_pid_default}}
 : ${OCF_RESKEY_monitor_binary=${OCF_RESKEY_monitor_binary_default}}
-: ${OCF_RESKEY_server_queue_port=${OCF_RESKEY_server_queue_port_default}}
+: ${OCF_RESKEY_service_connection=${OCF_RESKEY_service_connection_default}}
+: ${OCF_RESKEY_console_type=${OCF_RESKEY_console_type_default}}
+: ${OCF_RESKEY_console_port=${OCF_RESKEY_console_port_default}}
 
 #######################################################################
 
@@ -52,7 +53,7 @@ usage() {
     cat <<UEND
         usage: $0 (start|stop|validate-all|meta-data|status|monitor)
 
-        $0 manages an OpenStack SchedulerService (nova-scheduler) process as an HA resource 
+        $0 manages an OpenStack Nova ConsoleAuth (nova-consoleauth) process as an HA resource 
 
         The 'start' operation starts the identity service.
         The 'stop' operation stops the identity service.
@@ -68,72 +69,64 @@ meta_data() {
     cat <<END
 <?xml version="1.0"?>
 <!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
-<resource-agent name="nova-scheduler">
+<resource-agent name="nova-consoleauth">
 <version>1.0</version>
 
 <longdesc lang="en">
-Resource agent for the OpenStack NovaScheduler Service (nova-scheduler)
-May manage a nova-scheduler instance or a clone set that 
-creates a distributed nova-scheduler cluster.
+Resource agent for the OpenStack Nova ConsoleAuth Service (nova-consoleauth)
+May manage a nova-consoleauth instance or a clone set that 
+creates a distributed nova-consoleauth cluster.
 </longdesc>
-<shortdesc lang="en">Manages the OpenStack SchedulerService (nova-scheduler)</shortdesc>
+<shortdesc lang="en">Manages the OpenStack Nova ConsoleAuth (nova-consoleauth)</shortdesc>
 <parameters>
 
 <parameter name="binary" unique="0" required="0">
 <longdesc lang="en">
-Location of the OpenStack NovaScheduler server binary (nova-scheduler)
+Location of the OpenStack Nova ConsoleAuth server binary (nova-consoleauth)
 </longdesc>
-<shortdesc lang="en">OpenStack NovaScheduler server binary (nova-scheduler)</shortdesc>
+<shortdesc lang="en">OpenStack Nova ConsoleAuth server binary (nova-consoleauth)</shortdesc>
 <content type="string" default="${OCF_RESKEY_binary_default}" />
 </parameter>
 
 <parameter name="config" unique="0" required="0">
 <longdesc lang="en">
-Location of the OpenStack SchedulerService (nova-scheduler) configuration file
+Location of the OpenStack Nova ConsoleAuth (nova-consoleauth) configuration file
 </longdesc>
-<shortdesc lang="en">OpenStack NovaScheduler (nova-scheduler registry) config file</shortdesc>
+<shortdesc lang="en">OpenStack Nova ConsoleAuth (nova-consoleauth registry) config file</shortdesc>
 <content type="string" default="${OCF_RESKEY_config_default}" />
 </parameter>
 
 <parameter name="user" unique="0" required="0">
 <longdesc lang="en">
-User running OpenStack SchedulerService (nova-scheduler)
+User running OpenStack Nova ConsoleAuth (nova-consoleauth)
 </longdesc>
-<shortdesc lang="en">OpenStack SchedulerService (nova-scheduler) user</shortdesc>
+<shortdesc lang="en">OpenStack Nova ConsoleAuth (nova-consoleauth) user</shortdesc>
 <content type="string" default="${OCF_RESKEY_user_default}" />
 </parameter>
 
 <parameter name="pid" unique="0" required="0">
 <longdesc lang="en">
-The pid file to use for this OpenStack SchedulerService (nova-scheduler) instance
+The pid file to use for this OpenStack Nova ConsoleAuth (nova-consoleauth) instance
 </longdesc>
-<shortdesc lang="en">OpenStack SchedulerService (nova-scheduler) pid file</shortdesc>
+<shortdesc lang="en">OpenStack Nova ConsoleAuth (nova-consoleauth) pid file</shortdesc>
 <content type="string" default="${OCF_RESKEY_pid_default}" />
 </parameter>
 
-<parameter name="server_queue_port" unique="0" required="0">                                                                                                                                                              
-<longdesc lang="en">                                                                                                                                                                                                      
-The listening port number of the AMQP server. Mandatory to perform a monitor check                                                                                                                                        
-</longdesc>                                                                                                                                                                                                               
-<shortdesc lang="en">AMQP listening port</shortdesc>                                                                                                                                                                      
-<content type="integer" default="${OCF_RESKEY_server_queue_port_default}" />                                                                                                                                              
-</parameter>      
-
 <parameter name="additional_parameters" unique="0" required="0">
 <longdesc lang="en">
-Additional parameters to pass on to the OpenStack SchedulerService (nova-scheduler)
+Additional parameters to pass on to the OpenStack Nova ConsoleAuth (nova-consoleauth)
 </longdesc>
-<shortdesc lang="en">Additional parameters for nova-scheduler</shortdesc>
+<shortdesc lang="en">Additional parameters for nova-consoleauth</shortdesc>
 <content type="string" />
 </parameter>
 
 </parameters>
 
 <actions>
-<action name="start" timeout="20" />
-<action name="stop" timeout="20" />
-<action name="status" timeout="20" />
-<action name="monitor" timeout="30" interval="20" />
+<action name="start" timeout="10" />
+<action name="stop" timeout="10" />
+<action name="status" timeout="10" />
+<action name="monitor" timeout="5" interval="10" />
 <action name="validate-all" timeout="5" />
 <action name="meta-data" timeout="5" />
 </actions>
@@ -144,7 +137,7 @@ END
 #######################################################################
 # Functions invoked by resource manager actions
 
-nova_scheduler_validate() {
+nova_consoleauth_validate() {
     local rc
 
     check_binary $OCF_RESKEY_binary
@@ -169,12 +162,12 @@ nova_scheduler_validate() {
     true
 }
 
-nova_scheduler_status() {
+nova_consoleauth_status() {
     local pid
     local rc
 
     if [ ! -f $OCF_RESKEY_pid ]; then
-        ocf_log info "OpenStack NovaScheduler (nova-scheduler) is not running"
+        ocf_log info "OpenStack Nova ConsoleAuth (nova-consoleauth) is not running"
         return $OCF_NOT_RUNNING
     else
         pid=`cat $OCF_RESKEY_pid`
@@ -185,16 +178,16 @@ nova_scheduler_status() {
     if [ $rc -eq 0 ]; then
         return $OCF_SUCCESS
     else
-        ocf_log info "Old PID file found, but OpenStack NovaScheduler (nova-scheduler) is not running"
+        ocf_log info "Old PID file found, but OpenStack Nova ConsoleAuth (nova-consoleauth) is not running"
         return $OCF_NOT_RUNNING
     fi
 }
 
-nova_scheduler_monitor() {
+nova_consoleauth_monitor() {
     local rc
     local token
 
-    nova_scheduler_status
+    nova_consoleauth_status
     rc=$?
 
     # If status returned anything but success, return that immediately
@@ -202,34 +195,34 @@ nova_scheduler_monitor() {
         return $rc
     fi
 
-    # Check whether we are supposed to monitor by logging into nova-scheduler
+    # Check whether we are supposed to monitor by logging into nova-consoleauth
     # and do it if that's the case.
     if ! check_binary $OCF_RESKEY_monitor_binary; then 
 		ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!" 
 	else
-		AMQP_CO_CHECK=`$OCF_RESKEY_monitor_binary -tun | egrep $OCF_RESKEY_server_queue_port | egrep -q "ESTABLISHED"`
+		VNC_LIST_CHECK=`$OCF_RESKEY_monitor_binary -tun | egrep -E OCF_RESKEY_service_connection_default | egrep -q "ESTABLISHED"`
     fi
     rc=$?
     if [ $rc -ne 0 ]; then
-        ocf_log err "Nova Scheduler is not connected to the queue message service: $rc"
+        ocf_log err "Nova API is not connected to the queue message service: $rc"
         return $OCF_NOT_RUNNING
     fi
 
-    ocf_log debug "OpenStack NovaScheduler (nova-scheduler) monitor succeeded"
+    ocf_log debug "OpenStack Nova ConsoleAuth (nova-consoleauth) monitor succeeded"
     return $OCF_SUCCESS
 }
 
-nova_scheduler_start() {
+nova_consoleauth_start() {
     local rc
 
-    nova_scheduler_status
+    nova_consoleauth_status
     rc=$?
     if [ $rc -eq $OCF_SUCCESS ]; then
-        ocf_log info "OpenStack NovaScheduler (nova-scheduler) already running"
+        ocf_log info "OpenStack Nova ConsoleAuth (nova-consoleauth) already running"
         return $OCF_SUCCESS
     fi
 
-    # run the actual nova-scheduler daemon. Don't use ocf_run as we're sending the tool's output
+    # run the actual nova-consoleauth daemon. Don't use ocf_run as we're sending the tool's output
     # straight to /dev/null anyway and using ocf_run would break stdout-redirection here.
     su ${OCF_RESKEY_user} -s /bin/sh -c "${OCF_RESKEY_binary} --flagfile=$OCF_RESKEY_config \
        $OCF_RESKEY_additional_parameters"' >> /dev/null 2>&1 & echo $!' > $OCF_RESKEY_pid
@@ -237,28 +230,28 @@ nova_scheduler_start() {
     # Spin waiting for the server to come up.
     # Let the CRM/LRM time us out if required
     while true; do
-    nova_scheduler_monitor
+    nova_consoleauth_monitor
     rc=$?
     [ $rc -eq $OCF_SUCCESS ] && break
     if [ $rc -ne $OCF_NOT_RUNNING ]; then
-        ocf_log err "OpenStack NovaScheduler (nova-scheduler) start failed"
+        ocf_log err "OpenStack Nova ConsoleAuth (nova-consoleauth) start failed"
         exit $OCF_ERR_GENERIC
     fi
     sleep 1
     done
 
-    ocf_log info "OpenStack NovaScheduler (nova-scheduler) started"
+    ocf_log info "OpenStack Nova ConsoleAuth (nova-consoleauth) started"
     return $OCF_SUCCESS
 }
 
-nova_scheduler_stop() {
+nova_consoleauth_stop() {
     local rc
     local pid
 
-    nova_scheduler_status
+    nova_consoleauth_status
     rc=$?
     if [ $rc -eq $OCF_NOT_RUNNING ]; then
-        ocf_log info "OpenStack NovaScheduler (nova-scheduler) already stopped"
+        ocf_log info "OpenStack Nova ConsoleAuth (nova-consoleauth) already stopped"
         return $OCF_SUCCESS
     fi
 
@@ -267,7 +260,7 @@ nova_scheduler_stop() {
     ocf_run kill -s TERM $pid
     rc=$?
     if [ $rc -ne 0 ]; then
-        ocf_log err "OpenStack NovaScheduler (nova-scheduler) couldn't be stopped"
+        ocf_log err "OpenStack Nova ConsoleAuth (nova-consoleauth) couldn't be stopped"
         exit $OCF_ERR_GENERIC
     fi
 
@@ -278,26 +271,26 @@ nova_scheduler_stop() {
     fi
     count=0
     while [ $count -lt $shutdown_timeout ]; do
-        nova_scheduler_status
+        nova_consoleauth_status
         rc=$?
         if [ $rc -eq $OCF_NOT_RUNNING ]; then
             break
         fi
         count=`expr $count + 1`
         sleep 1
-        ocf_log debug "OpenStack NovaScheduler (nova-scheduler) still hasn't stopped yet. Waiting ..."
+        ocf_log debug "OpenStack Nova ConsoleAuth (nova-consoleauth) still hasn't stopped yet. Waiting ..."
     done
 
-    nova_scheduler_status
+    nova_consoleauth_status
     rc=$?
     if [ $rc -ne $OCF_NOT_RUNNING ]; then
         # SIGTERM didn't help either, try SIGKILL
-        ocf_log info "OpenStack NovaScheduler (nova-scheduler) failed to stop after ${shutdown_timeout}s \
+        ocf_log info "OpenStack Nova ConsoleAuth (nova-consoleauth) failed to stop after ${shutdown_timeout}s \
           using SIGTERM. Trying SIGKILL ..."
         ocf_run kill -s KILL $pid
     fi
 
-    ocf_log info "OpenStack NovaScheduler (nova-scheduler) stopped"
+    ocf_log info "OpenStack Nova ConsoleAuth (nova-consoleauth) stopped"
 
     rm -f $OCF_RESKEY_pid
 
@@ -314,14 +307,14 @@ case "$1" in
 esac
 
 # Anything except meta-data and help must pass validation
-nova_scheduler_validate || exit $?
+nova_consoleauth_validate || exit $?
 
 # What kind of method was invoked?
 case "$1" in
-  start)        nova_scheduler_start;;
-  stop)         nova_scheduler_stop;;
-  status)       nova_scheduler_status;;
-  monitor)      nova_scheduler_monitor;;
+  start)        nova_consoleauth_start;;
+  stop)         nova_consoleauth_stop;;
+  status)       nova_consoleauth_status;;
+  monitor)      nova_consoleauth_monitor;;
   validate-all) ;;
   *)            usage
                 exit $OCF_ERR_UNIMPLEMENTED;;
