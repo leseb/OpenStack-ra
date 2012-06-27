@@ -1,9 +1,9 @@
-OpenStack resource agent
-========================
+OpenStack resource agents
+=========================
 
 Currently I wrote the most 2 missing resource agent in OpenStack. The ra for nova-api and nova-scheduler mainly re-use the structure of the resource agent written by Martin Gerhard Loschwitz from Hastexo.
 
-## Prerequisite
+## Prerequisites
 
     $ sudo mkdir /usr/lib/ocf/resource.d/openstack
     $ cd /usr/lib/ocf/resource.d/openstack
