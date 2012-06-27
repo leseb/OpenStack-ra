@@ -1,7 +1,7 @@
 OpenStack resource agents
 =========================
 
-Currently I wrote the most 2 missing resource agent in OpenStack. The ra for nova-api and nova-scheduler mainly re-use the structure of the resource agent written by Martin Gerhard Loschwitz from Hastexo.
+Currently I wrote the missing resource agents in OpenStack. All the 'nova' RAs  mainly re-use the structure of the resource agent written by Martin Gerhard Loschwitz from Hastexo. http://goo.gl/whLpr
 
 ## Prerequisites
 
