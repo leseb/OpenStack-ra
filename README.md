@@ -20,7 +20,7 @@ The ra checks if the pid exists and also verifies if the nova-api listening port
 
 Usage:
 
-    primitive p_nova_api ocf:openstack:nova-api \
+    primitive p_nova_api ocf:openstack:nova-api-ra \
         params config="/etc/nova/nova.conf" \
         op monitor interval="5s" timeout="5s" \
 
@@ -30,13 +30,13 @@ The ra checks if the pid exists and also verifies if the connection to the AMQP 
 
 Usage:
 
-    primitive p_scheduler ocf:openstack:nova-scheduler \
+    primitive p_scheduler ocf:openstack:nova-scheduler-ra \
         params config="/etc/nova/nova.conf" amqp_server_port="5765" database_server_port="3307" \
         op monitor interval="30s" timeout="30s" \
 
 If you use zero-MQ:
 
-    primitive p_scheduler ocf:openstack:nova-scheduler \
+    primitive p_scheduler ocf:openstack:nova-scheduler-ra \
         params config="/etc/nova/nova.conf" zeromq="true" \
         op monitor interval="30s" timeout="30s" \
 
@@ -50,4 +50,8 @@ Same checks as nova-scheduler
 
 ## Nova-vnc
 
-The ra checks if the pid exists and also verifies if the vnc service is listenning on his port. The ra is alos compatible with xvpvnc
+The ra checks if the pid exists and also verifies if the vnc service is listenning on his port. The ra is also compatible with xvpvnc, simply change the listenning port with the console_port parameters.
+
+    primitive p_vnc ocf:openstack:nova-vnc-ra \
+        params config="/etc/nova/nova.conf" console_port="5900" \
+        op monitor interval="30s" timeout="30s" \
