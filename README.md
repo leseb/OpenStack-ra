@@ -20,9 +20,9 @@ The ra checks if the pid exists and also verifies if the nova-api listening port
 
 Usage:
 
-     primitive p_nova_api ocf:openstack:nova-api \
-             params config="/etc/nova/nova.conf" \
-	     op monitor interval="5s" timeout="5s" \
+    primitive p_nova_api ocf:openstack:nova-api \
+        params config="/etc/nova/nova.conf" \
+        op monitor interval="5s" timeout="5s" \
 
 ## Nova-Scheduler
 
