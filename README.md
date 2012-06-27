@@ -5,6 +5,8 @@ Currently I wrote the missing resource agents in OpenStack. All the 'nova' RAs  
 
 ## Prerequisites
 
+Do the following actions:
+
     $ sudo mkdir /usr/lib/ocf/resource.d/openstack
     $ cd /usr/lib/ocf/resource.d/openstack
     $ sudo wget https://raw.github.com/leseb/OpenStack-ra/master/nova-api-ra
