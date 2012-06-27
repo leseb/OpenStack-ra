@@ -34,7 +34,7 @@ Usage:
         params config="/etc/nova/nova.conf" amqp_server_port="5765" database_server_port="3307" \
 	op monitor interval="30s" timeout="30s" \
 
-If you use zero-MQ
+If you use zero-MQ:
 
     primitive p_scheduler ocf:openstack:nova-scheduler \
 	params config="/etc/nova/nova.conf" zeromq="true" \
