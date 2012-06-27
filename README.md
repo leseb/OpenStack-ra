@@ -3,24 +3,49 @@ OpenStack resource agent
 
 Currently I wrote the most 2 missing resource agent in OpenStack. The ra for nova-api and nova-scheduler mainly re-use the structure of the resource agent written by Martin Gerhard Loschwitz from Hastexo.
 
+## Pre-requisite
+
+    $ sudo mkdir /usr/lib/ocf/resources.d/openstack
+    $ 
+
+And so on for every resource agent. For more information about each ra (here example for nova-scheduler):
+
+    $ crm info ocf:openstack:nova-scheduler
+
 ## Nova-API
 
 The ra checks if the pid exists and also verifies if the nova-api listening ports are opened.
 
-## Nova-Scheduler
-
-The ra checks if the pid exists and also verifies if the connection to the AMQP server is properly established. Thus the ra is not compatible with Zero-MQ.
-
-## Examples
-
-For nova-api:
+Usage:
 
      primitive p_nova_api ocf:openstack:nova-api \
-    	params config="/etc/nova/nova.conf" \
-     	op monitor interval="5s" timeout="5s" \
+             params config="/etc/nova/nova.conf" \
+	     op monitor interval="5s" timeout="5s" \
 
-For nova-scheduler:
+## Nova-Scheduler
+
+The ra checks if the pid exists and also verifies if the connection to the AMQP server is properly established. Thus the ra is also compatible with Zero-MQ but in this case only checks the connection to the database.
+
+Usage:
 
     primitive p_scheduler ocf:openstack:nova-scheduler \
-    	params config="/etc/nova/nova.conf" \
-    	op monitor interval="30s" timeout="30s" \ 
+        params config="/etc/nova/nova.conf" amqp_server_port="5765" database_server_port="3307" \
+	op monitor interval="30s" timeout="30s" \
+
+If you use zero-MQ
+
+    primitive p_scheduler ocf:openstack:nova-scheduler \
+	params config="/etc/nova/nova.conf" zeromq="true" \
+        op monitor interval="30s" timeout="30s" \
+
+## Nova-cert
+
+Same checks as nova-scheduler
+
+## Nova-consoleauth
+
+Same checks as nova-scheduler
+
+## Nova-vnc
+
+The ra checks if the pid exists and also verifies if the vnc service is listenning on his port. The ra is alos compatible with xvpvnc

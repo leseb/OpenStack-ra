@@ -22,6 +22,7 @@
 #   OCF_RESKEY_monitor_binary
 #   OCF_RESKEY_server_queue_port
 #   OCF_RESKEY_amqp_server_port
+#   OCF_RESKEY_zeromq
 #   OCF_RESKEY_additional_parameters
 #######################################################################
 # Initialization:
@@ -134,9 +135,9 @@ The listening port number of the AMQP server. Mandatory to perform a monitor che
 
 <parameter name="zeromq" unique="0" required="0">                                                                                                                                                              
 <longdesc lang="en">                                                                                                                                                                                                      
-If zeromq is in use, this will disable the amqp connection test                                                                                                                                       
+If zeromq is used, this will disable the connection test to the AMQP server                                                                                                                                     
 </longdesc>                                                                                                                                                                                                               
-<shortdesc lang="en">AMQP listening port</shortdesc>                                                                                                                                                                      
+<shortdesc lang="en">Zero-MQ usage</shortdesc>                                                                                                                                                                      
 <content type="boolean" default="${OCF_RESKEY_zeromq_default}" />                                                                                                                                              
 </parameter>  
 
@@ -230,7 +231,7 @@ nova_scheduler_monitor() {
         else
 			if [ $OCF_RESKEY_zeromq = true ]; then
 				PID=`cat $OCF_RESKEY_pid`
-				SCHEDULER_AMQP_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_amqp_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
+				SCHEDULER_DATABASE_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_database_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
 				rc_database=$?
 				if [ $rc_database -ne 0 ]; then
 				    ocf_log err "Nova Scheduler is not connected to the database server: $rc"

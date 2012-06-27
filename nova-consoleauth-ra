@@ -21,6 +21,7 @@
 #   OCF_RESKEY_pid
 #   OCF_RESKEY_monitor_binary
 #   OCF_RESKEY_amqp_server_port
+#   OCF_RESKEY_zeromq
 #   OCF_RESKEY_additional_parameters
 #######################################################################
 # Initialization:
@@ -39,6 +40,7 @@ OCF_RESKEY_pid_default="$HA_RSCTMP/$OCF_RESOURCE_INSTANCE.pid"
 OCF_RESKEY_monitor_binary_default="netstat"
 OCF_RESKEY_database_server_port_default="3306"
 OCF_RESKEY_amqp_server_port_default="5672"
+OCF_RESKEY_zeromq_default="false"
 
 : ${OCF_RESKEY_binary=${OCF_RESKEY_binary_default}}
 : ${OCF_RESKEY_config=${OCF_RESKEY_config_default}}
@@ -47,6 +49,7 @@ OCF_RESKEY_amqp_server_port_default="5672"
 : ${OCF_RESKEY_monitor_binary=${OCF_RESKEY_monitor_binary_default}}
 : ${OCF_RESKEY_database_server_port=${OCF_RESKEY_database_server_port_default}}
 : ${OCF_RESKEY_amqp_server_port=${OCF_RESKEY_server_amqp_port_default}}
+: ${OCF_RESKEY_zeromq=${OCF_RESKEY_zeromq_default}}
 
 #######################################################################
 
@@ -128,6 +131,14 @@ The listening port number of the AMQP server. Mandatory to perform a monitor che
 <shortdesc lang="en">AMQP listening port</shortdesc>                                                                                                                                                                      
 <content type="integer" default="${OCF_RESKEY_amqp_server_port_default}" />                                                                                                                                              
 </parameter>  
+
+<parameter name="zeromq" unique="0" required="0">                                                                                                                                                              
+<longdesc lang="en">                                                                                                                                                                                                      
+If zeromq is used, this will disable the connection test to the AMQP server                                                                                                                                    
+</longdesc>                                                                                                                                                                                                               
+<shortdesc lang="en">Zero-MQ usage</shortdesc>                                                                                                                                                                      
+<content type="boolean" default="${OCF_RESKEY_zeromq_default}" />                                                                                                                                              
+</parameter>
 
 <parameter name="additional_parameters" unique="0" required="0">
 <longdesc lang="en">
@@ -214,20 +225,30 @@ nova_consoleauth_monitor() {
 
     # Check whether we are supposed to monitor by logging into nova-consoleauth
     # and do it if that's the case.
-    if ! check_binary $OCF_RESKEY_monitor_binary; then 
-		ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!" 
-	else
-		PID=`cat $OCF_RESKEY_pid`
-		# check the connections according to the PID
-		CONSOLE_AMQP_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_database_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
-		rc_amqp=$?
-		CONSOLE_DATABASE_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_amqp_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
-		rc_database=$?
-    fi
-    if [ $rc_amqp -ne 0 ] || [ $rc_database -ne 0 ]; then
-        ocf_log err "Nova ConsoleAuth is not connected to the AMQP server or the database: $rc"
-        return $OCF_NOT_RUNNING
-    fi
+    if ! check_binary $OCF_RESKEY_monitor_binary; then
+                ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!"
+        else
+			if [ $OCF_RESKEY_zeromq = true ]; then
+				PID=`cat $OCF_RESKEY_pid`
+				CONSOLE_DATABASE_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_database_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
+				rc_database=$?
+				if [ $rc_database -ne 0 ]; then
+				    ocf_log err "Nova ConsoleAuth is not connected to the database server: $rc"
+				    return $OCF_NOT_RUNNING
+				fi
+			else
+                PID=`cat $OCF_RESKEY_pid`
+                # check the connections according to the PID
+                CONSOLE_DATABASE_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_database_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
+                rc_amqp=$?
+                CONSOLE_AMQP_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | egrep "$OCF_RESKEY_amqp_server_port" | egrep "$PID" | egrep -q "ESTABLISHED"`
+                rc_database=$?
+				if [ $rc_amqp -ne 0 ] || [ $rc_database -ne 0 ]; then
+				    ocf_log err "Nova ConsoleAuth is not connected to the AMQP server and/or the database server: $rc"
+				    return $OCF_NOT_RUNNING
+				fi
+			fi
+        fi
 
     ocf_log debug "OpenStack Nova ConsoleAuth (nova-consoleauth) monitor succeeded"
     return $OCF_SUCCESS
@@ -250,6 +271,7 @@ nova_consoleauth_start() {
 
     # Spin waiting for the server to come up.
     # Let the CRM/LRM time us out if required
+	sleep 1
     while true; do
     nova_consoleauth_monitor
     rc=$?
