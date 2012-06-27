@@ -22,7 +22,7 @@ Usage:
 
     primitive p_nova_api ocf:openstack:nova-api-ra \
         params config="/etc/nova/nova.conf" \
-        op monitor interval="5s" timeout="5s" \
+        op monitor interval="5s" timeout="5s"
 
 ## Nova-Scheduler
 
@@ -32,13 +32,13 @@ Usage:
 
     primitive p_scheduler ocf:openstack:nova-scheduler-ra \
         params config="/etc/nova/nova.conf" amqp_server_port="5765" database_server_port="3307" \
-        op monitor interval="30s" timeout="30s" \
+        op monitor interval="30s" timeout="30s"
 
 If you use zero-MQ:
 
     primitive p_scheduler ocf:openstack:nova-scheduler-ra \
         params config="/etc/nova/nova.conf" zeromq="true" \
-        op monitor interval="30s" timeout="30s" \
+        op monitor interval="30s" timeout="30s"
 
 ## Nova-cert
 
@@ -54,4 +54,4 @@ The ra checks if the pid exists and also verifies if the vnc service is listenni
 
     primitive p_vnc ocf:openstack:nova-vnc-ra \
         params config="/etc/nova/nova.conf" console_port="5900" \
-        op monitor interval="30s" timeout="30s" \
+        op monitor interval="30s" timeout="30s"
