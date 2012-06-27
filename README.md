@@ -5,12 +5,14 @@ Currently I wrote the most 2 missing resource agent in OpenStack. The ra for nov
 
 ## Pre-requisite
 
-    $ sudo mkdir /usr/lib/ocf/resources.d/openstack
-    $ 
+    $ sudo mkdir /usr/lib/ocf/resource.d/openstack
+    $ cd /usr/lib/ocf/resource.d/openstack
+    $ sudo wget https://raw.github.com/leseb/OpenStack-ra/master/nova-api-ra
+    $ sudo chmod +x nova-api-ra
 
 And so on for every resource agent. For more information about each ra (here example for nova-scheduler):
 
-    $ crm info ocf:openstack:nova-scheduler
+    $ sudo crm ra info ocf:openstack:nova-scheduler
 
 ## Nova-API
 
