@@ -20,7 +20,6 @@
 #   OCF_RESKEY_user
 #   OCF_RESKEY_pid
 #   OCF_RESKEY_monitor_binary
-#   OCF_RESKEY_additional_parameters
 #   OCF_RESKEY_api_listened_port
 #   OCF_RESKEY_additional_parameters
 #######################################################################

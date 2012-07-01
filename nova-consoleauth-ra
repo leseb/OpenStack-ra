@@ -20,6 +20,7 @@
 #   OCF_RESKEY_user
 #   OCF_RESKEY_pid
 #   OCF_RESKEY_monitor_binary
+#   OCF_RESKEY_database_server_port
 #   OCF_RESKEY_amqp_server_port
 #   OCF_RESKEY_zeromq
 #   OCF_RESKEY_additional_parameters
@@ -48,7 +49,7 @@ OCF_RESKEY_zeromq_default="false"
 : ${OCF_RESKEY_pid=${OCF_RESKEY_pid_default}}
 : ${OCF_RESKEY_monitor_binary=${OCF_RESKEY_monitor_binary_default}}
 : ${OCF_RESKEY_database_server_port=${OCF_RESKEY_database_server_port_default}}
-: ${OCF_RESKEY_amqp_server_port=${OCF_RESKEY_server_amqp_port_default}}
+: ${OCF_RESKEY_amqp_server_port=${OCF_RESKEY_amqp_server_port_default}}
 : ${OCF_RESKEY_zeromq=${OCF_RESKEY_zeromq_default}}
 
 #######################################################################

@@ -20,7 +20,7 @@
 #   OCF_RESKEY_user
 #   OCF_RESKEY_pid
 #   OCF_RESKEY_monitor_binary
-#   OCF_RESKEY_server_queue_port
+#   OCF_RESKEY_database_server_port
 #   OCF_RESKEY_amqp_server_port
 #   OCF_RESKEY_zeromq
 #   OCF_RESKEY_additional_parameters
