@@ -37,7 +37,7 @@ OCF_RESKEY_config_default="/etc/nova/nova.conf"
 OCF_RESKEY_user_default="nova"
 OCF_RESKEY_pid_default="$HA_RSCTMP/$OCF_RESOURCE_INSTANCE.pid"
 OCF_RESKEY_monitor_binary_default="netstat"
-OCF_RESKEY_api_listened_port_default="8773|8774|8776"
+OCF_RESKEY_api_listened_port_default="8773|8774|8775|8776"
 
 : ${OCF_RESKEY_binary=${OCF_RESKEY_binary_default}}
 : ${OCF_RESKEY_config=${OCF_RESKEY_config_default}}
@@ -197,14 +197,14 @@ nova_api_monitor() {
     # Check whether we are supposed to monitor by logging into nova-api
     # and do it if that's the case.
     if ! check_binary $OCF_RESKEY_monitor_binary; then 
-		ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!" 
-	else
-		# Check osapi_compute and osapi_volume ports
-		API_LIST_CHECK=`$OCF_RESKEY_monitor_binary -a | egrep -E $OCF_RESKEY_api_listened_port | egrep -q "LISTEN"`
+        ocf_log warn "$OCF_RESKEY_monitor_binary missing, can not monitor!" 
+    else
+        # Check ec2, osapi_compute, osapi_volume and metadata ports
+        API_LIST_CHECK=`"$OCF_RESKEY_monitor_binary" -a | egrep -E "\"$OCF_RESKEY_api_listened_port\"" | grep -q "LISTEN"`
     fi
     rc=$?
     if [ $rc -ne 0 ]; then
-        ocf_log err "Nova API is not connected to the queue message service: $rc"
+        ocf_log err "Nova API doesn't listen properly: $rc"
         return $OCF_NOT_RUNNING
     fi
 
