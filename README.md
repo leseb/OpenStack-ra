@@ -9,8 +9,8 @@ Do the following actions:
 
     $ sudo mkdir /usr/lib/ocf/resource.d/openstack
     $ cd /usr/lib/ocf/resource.d/openstack
-    $ sudo wget https://raw.github.com/leseb/OpenStack-ra/master/nova-api-ra
-    $ sudo chmod +x nova-api-ra
+    $ sudo wget https://raw.github.com/leseb/OpenStack-ra/master/nova-api
+    $ sudo chmod +x nova-api
 
 And so on for every resource agent. For more information about each ra (here example for nova-scheduler):
 
@@ -22,7 +22,7 @@ The ra checks if the pid exists and also verifies if the nova-api listening port
 
 Usage:
 
-    primitive p_nova_api ocf:openstack:nova-api-ra \
+    primitive p_nova_api ocf:openstack:nova-api \
         params config="/etc/nova/nova.conf" \
         op monitor interval="5s" timeout="5s"
 
@@ -32,13 +32,13 @@ The ra checks if the pid exists and also verifies if the connection to the AMQP 
 
 Usage:
 
-    primitive p_scheduler ocf:openstack:nova-scheduler-ra \
+    primitive p_scheduler ocf:openstack:nova-scheduler \
         params config="/etc/nova/nova.conf" amqp_server_port="5765" database_server_port="3307" \
         op monitor interval="30s" timeout="30s"
 
 If you use zero-MQ:
 
-    primitive p_scheduler ocf:openstack:nova-scheduler-ra \
+    primitive p_scheduler ocf:openstack:nova-scheduler \
         params config="/etc/nova/nova.conf" zeromq="true" \
         op monitor interval="30s" timeout="30s"
 
@@ -54,6 +54,6 @@ Same checks as nova-scheduler
 
 The ra checks if the pid exists and also verifies if the vnc service is listenning on his port. The ra is also compatible with xvpvnc, simply change the listenning port with the console_port parameters.
 
-    primitive p_vnc ocf:openstack:nova-vnc-ra \
+    primitive p_vnc ocf:openstack:nova-vnc \
         params config="/etc/nova/nova.conf" console_port="5900" \
         op monitor interval="30s" timeout="30s"
