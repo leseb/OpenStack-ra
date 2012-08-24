@@ -245,7 +245,7 @@ nova_consoleauth_monitor() {
                 CONSOLE_AMQP_CO_CHECK=`"$OCF_RESKEY_monitor_binary" -punt | grep "$OCF_RESKEY_amqp_server_port" | egrep "$PID" | grep -q "ESTABLISHED"`
                 rc_amqp=$?
 				if [ $rc_amqp -ne 0 ] || [ $rc_database -ne 0 ]; then
-				    ocf_log err "Nova ConsoleAuth is not connected to the AMQP server and/or the database server: $rc_amqp and $rc_database"
+				    ocf_log err "Nova ConsoleAuth is not connected to the AMQP server and/or the database server: AMQP connection test returned $rc_amqp and database connection test returned $rc_database"
 				    return $OCF_NOT_RUNNING
 				fi
 			fi
